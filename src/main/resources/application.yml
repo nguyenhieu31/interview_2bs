@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: document
+  datasource:
+    url: jdbc:postgresql://14.162.145.33:5432/TestDB
+    username: testdb
+    password: testdb
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    open-in-view: true
+
+server:
+  servlet:
+    context-path: /api/v1
+  port: 8087
+
+base-url: http://14.162.145.33:8084/api
