@@ -19,4 +19,9 @@ public class DocumentAttachmentController {
     public ApiResponse<String> uploadDocument(@ModelAttribute @Valid DocumentAttachmentRequest request) throws Exception {
         return CreateApiResponse.createResponse(documentAttachmentService.save(request));
     }
+
+    @GetMapping(value = "/download")
+    public ApiResponse<String> downloadDocument(@RequestParam("docAttachmentId") String docAttachmentId) throws Exception {
+        return CreateApiResponse.createResponse(documentAttachmentService.download(docAttachmentId));
+    }
 }

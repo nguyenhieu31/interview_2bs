@@ -27,6 +27,6 @@ public class DocumentHistoryRequest {
     @NotBlank(message = "Message content isn't blank")
     private String messageContent;
 
-    @NotNull(message = "Document ID is required")
-    private UUID documentId;
+    @NotBlank(message = "Document ID isn't blank")
+    private String documentId;
 }

@@ -70,8 +70,26 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public Document checkExist(UUID documentId) {
-        Optional<Document> documentExist = documentRepository.findById(documentId);
+    public Document checkExist(String documentId) {
+        UUID documentUUID = null;
+        if(!documentId.isEmpty()){
+            try{
+                documentUUID = UUID.fromString(documentId);
+            }catch (IllegalArgumentException e){
+                throw new ApiException(
+                        ErrorCode.BAD_REQUEST.getStatusCode().value(),
+                        "documentId",
+                        "Invalid uuid format."
+                );
+            }
+        }else{
+            throw new ApiException(
+                    ErrorCode.BAD_REQUEST.getStatusCode().value(),
+                    "documentId",
+                    "DocumentID is required."
+            );
+        }
+        Optional<Document> documentExist = documentRepository.findById(documentUUID);
         if(documentExist.isEmpty()){
             throw new ApiException(
                     ErrorCode.BAD_REQUEST.getStatusCode().value(),

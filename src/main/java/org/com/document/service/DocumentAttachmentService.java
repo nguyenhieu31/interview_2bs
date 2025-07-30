@@ -4,4 +4,5 @@ import org.com.document.dto.request.DocumentAttachmentRequest;
 
 public interface DocumentAttachmentService {
     String save(DocumentAttachmentRequest request) throws Exception;
+    String download(String docAttachmentId) throws Exception;
 }

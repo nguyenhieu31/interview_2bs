@@ -11,6 +11,6 @@ import java.util.UUID;
 
 public interface DocumentService {
     String save(DocumentUploadRequest request) throws Exception;
-    Document checkExist(UUID documentId);
+    Document checkExist(String documentId);
     PageResponse<List<DocumentSearchResponse>> search(int pageNum, int pageSize, DocumentSearchRequest request) throws Exception;
 }

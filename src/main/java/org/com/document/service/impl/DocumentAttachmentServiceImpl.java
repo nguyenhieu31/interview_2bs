@@ -19,6 +19,7 @@ import org.com.document.utils.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.UUID;
 
 @Service
@@ -41,7 +42,16 @@ public class DocumentAttachmentServiceImpl implements DocumentAttachmentService 
                         "File is required."
                 );
             }
-            String base64Data = FileUtils.convertToBase64(request.getFile());
+            String base64Data;
+            try{
+                base64Data = FileUtils.convertToBase64(request.getFile());
+            }catch (IOException e){
+                throw new ApiException(
+                        ErrorCode.BAD_REQUEST.getStatusCode().value(),
+                        "file",
+                        e.getMessage()
+                );
+            }
             Document document = documentService.checkExist(request.getDocumentId());
             DocumentAttachmentType documentAttachmentType = documentAttachmentTypeService.checkExist(request.getDocAttachmentTypeCode());
             FileUploadRequest fileUploadRequest = FileUploadRequest.builder()
@@ -51,12 +61,14 @@ public class DocumentAttachmentServiceImpl implements DocumentAttachmentService 
                     .documentType(document.getDocumentType().getCode())
                     .base64Data(base64Data)
                     .build();
-            FileDataResponse fileDataResponse = fileServerClient.uploadFile(fileUploadRequest);
-            if(fileDataResponse == null){
+            FileDataResponse fileDataResponse;
+            try{
+                fileDataResponse = fileServerClient.uploadFile(fileUploadRequest);
+            }catch (IllegalArgumentException e){
                 throw new ApiException(
                         ErrorCode.BAD_REQUEST.getStatusCode().value(),
                         "file",
-                        "Can't upload document to file server!!!"
+                        e.getMessage()
                 );
             }
             String url = baseUrl + AppConstant.GET_FILE_API + fileDataResponse.getId();
@@ -72,6 +84,41 @@ public class DocumentAttachmentServiceImpl implements DocumentAttachmentService 
             throw e;
         }catch (Exception e){
             throw new Exception(e);
+        }
+    }
+
+    @Override
+    public String download(String docAttachmentId) throws Exception {
+        try{
+            UUID docAttachmentUUID =  null;
+            if(!docAttachmentId.isEmpty()){
+                try{
+                    docAttachmentUUID = UUID.fromString(docAttachmentId);
+                }catch (IllegalArgumentException e){
+                    throw new ApiException(
+                            ErrorCode.BAD_REQUEST.getStatusCode().value(),
+                            "docAttachmentId",
+                            "Invalid uuid format."
+                    );
+                }
+            }else{
+                throw new ApiException(
+                        ErrorCode.BAD_REQUEST.getStatusCode().value(),
+                        "docAttachmentId",
+                        "DocAttachmentId is required."
+                );
+            }
+            DocumentAttachment documentAttachExist = documentAttachmentRepository.findById(docAttachmentUUID)
+                    .orElseThrow(()-> new ApiException(
+                            ErrorCode.BAD_REQUEST.getStatusCode().value(),
+                            "docAttachmentId",
+                            "Document Attachment not found."
+                    ));
+            return documentAttachExist.getLink();
+        }catch (ApiException e){
+            throw e;
+        }catch (Exception e){
+            throw new Exception(e.getMessage());
         }
     }
 }
