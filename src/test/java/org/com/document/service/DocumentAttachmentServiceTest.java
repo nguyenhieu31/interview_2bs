@@ -241,4 +241,38 @@ public class DocumentAttachmentServiceTest {
         }
     }
 
+    @Test
+    void testDownloadDocument_failed_docAttachmentIdInvalid(){
+        ApiException thrown = assertThrows(ApiException.class,
+                ()-> documentAttachmentService.download("test"));
+        assertEquals("Invalid uuid format.", thrown.getMessage());
+        assertEquals("docAttachmentId", thrown.getKey());
+        assertEquals(400, thrown.getCode());
+        verify(documentAttachmentRepository, never()).findById(any());
+
+        ApiException thrown1 = assertThrows(ApiException.class,
+                ()-> documentAttachmentService.download(""));
+        assertEquals("DocAttachmentId is required.", thrown1.getMessage());
+        assertEquals("docAttachmentId", thrown1.getKey());
+        assertEquals(400, thrown1.getCode());
+        verify(documentAttachmentRepository, never()).findById(any());
+    }
+
+    @Test
+    void testDownloadDocument_failed_docAttachmentIdNotFound(){
+        ApiException apiException = new ApiException(
+                ErrorCode.BAD_REQUEST.getStatusCode().value(),
+                "docAttachmentId",
+                "Document Attachment not found."
+        );
+        when(documentAttachmentRepository.findById(UUID.fromString("90bfff00-262b-44b3-a0b5-2f89a49efa47")))
+                .thenThrow(apiException);
+        ApiException thrown = assertThrows(ApiException.class,
+                ()-> documentAttachmentService.download("90bfff00-262b-44b3-a0b5-2f89a49efa47"));
+        assertEquals("Document Attachment not found.", thrown.getMessage());
+        assertEquals("docAttachmentId", thrown.getKey());
+        assertEquals(400, thrown.getCode());
+    }
+
+
 }
